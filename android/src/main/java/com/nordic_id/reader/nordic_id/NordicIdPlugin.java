@@ -3,12 +3,9 @@ package com.nordic_id.reader.nordic_id;
 import android.app.Activity;
 import android.content.Intent;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import java.util.HashMap;
-
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -24,6 +21,10 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import com.nordicid.nurapi.NurEventIOChange;
 
 /**
  * NordicIdPlugin
@@ -41,9 +42,9 @@ public class NordicIdPlugin implements FlutterPlugin, MethodCallHandler, Activit
     private static final String CHANNEL_ConnectionStatus = "ConnectionStatus";
     private static final String CHANNEL_TagsStatus = "TagsStatus";
 
-
     private static final PublishSubject<Boolean> connectionStatus = PublishSubject.create();
     private static final PublishSubject<String> tagsStatus = PublishSubject.create();
+    private static final PublishSubject<String> buttonEvent = PublishSubject.create();
 
     Activity activity;
 
@@ -250,5 +251,17 @@ public class NordicIdPlugin implements FlutterPlugin, MethodCallHandler, Activit
     public boolean onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         NurHelper.getInstance().onActivityResult(requestCode, resultCode, data);
         return true;
+    }
+
+    @Override
+    public void onIOChangeEvent(NurEventIOChange event) {
+        try {
+            JSONObject json = new JSONObject();
+            json.put("source", Integer.toString(event.source));
+            json.put("direction", Integer.toString(event.direction));
+            buttonEvent.onNext(json.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

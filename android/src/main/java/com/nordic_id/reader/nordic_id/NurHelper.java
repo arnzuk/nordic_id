@@ -489,6 +489,7 @@ public class NurHelper {
         @Override
         public void IOChangeEvent(NurEventIOChange event) {
             Log.i(TAG, "Key " + event.source);
+             mNurListener.onIOChangeEvent(event);
         }
 
         @Override

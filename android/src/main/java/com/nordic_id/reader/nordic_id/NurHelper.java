@@ -296,7 +296,7 @@ public class NurHelper {
         Thread sstThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                HashMap<String, String> tmp;
+                HashMap<String, String> tmp = new HashMap<String, String>();
                 try {
                     mSingleTempTxLevel = mNurApi.getSetupTxLevel();
                     mNurApi.setSetupTxLevel(NurApi.TXLEVEL_9);
@@ -326,7 +326,7 @@ public class NurHelper {
                                 JSONObject json = new JSONObject();
                                 final JSONArray jsonArray = new JSONArray();
                                 try {
-                                    tmp = new HashMap<String, String>();
+
                                     tmp.put("epc", tag.getEpcString());
                                     tmp.put("rssi", Integer.toString(tag.getRssi()));
                                     tag.setUserdata(tmp);

@@ -109,11 +109,9 @@ public class NordicIdPlugin implements FlutterPlugin, MethodCallHandler, Activit
                     Toast.makeText(activity, ex.getMessage(), Toast.LENGTH_LONG).show();
                     result.success(false);
                 }
-
-                NurHelper.getInstance().destroy();
+                //NurHelper.getInstance().destroy();
                 result.success(true);
                 break;
-
             default:
                 result.notImplemented();
         }

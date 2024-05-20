@@ -105,7 +105,8 @@ public class NordicIdPlugin
                         return;
                     }
                     NurHelper.getInstance().clearInventoryReadings(); // Clear all from old stuff
-                    NurHelper.getInstance().doSingleInventory(); // Make single round inventory.
+                    //NurHelper.getInstance().doSingleInventory(); // Make single round inventory.
+                    NurHelper.getInstance().ScanSingleTagThread();
                 } catch (Exception ex) {
                     Toast.makeText(activity, ex.getMessage(), Toast.LENGTH_LONG).show();
                     result.success(false);

@@ -327,7 +327,6 @@ public class NurHelper {
                                 JSONObject json = new JSONObject();
                                 final JSONArray jsonArray = new JSONArray();
                                 try {
-
                                     tmp.put("epc", tag.getEpcString());
                                     tmp.put("rssi", Integer.toString(tag.getRssi()));
                                     tag.setUserdata(tmp);
@@ -338,6 +337,8 @@ public class NurHelper {
                                     e.printStackTrace();
                                 }
                                 mNurListener.onInventoryResult(tmp, jsonArray.toString());
+                                if (mAccExt.isSupported())
+                                    mAccExt.beepAsync(300);
                                 Beeper.beep(Beeper.BEEP_300MS);
                                 mSingleTagDoTask = false;
                             }

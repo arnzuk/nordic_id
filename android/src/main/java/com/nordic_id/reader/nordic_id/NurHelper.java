@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import nordicid.com.nurupdate.NurDeviceUpdate;
 import nordicid.com.nurupdate.NurUpdateParams;
+import com.nordic_id.reader.nordic_id.Beeper;
 
 public class NurHelper {
     private static NurHelper instance;

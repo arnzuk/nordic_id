@@ -296,6 +296,7 @@ public class NurHelper {
         Thread sstThread = new Thread(new Runnable() {
             @Override
             public void run() {
+                HashMap<String, String> tmp;
                 try {
                     mSingleTempTxLevel = mNurApi.getSetupTxLevel();
                     mNurApi.setSetupTxLevel(NurApi.TXLEVEL_9);

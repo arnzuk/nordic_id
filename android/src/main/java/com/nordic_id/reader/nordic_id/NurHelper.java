@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import nordicid.com.nurupdate.NurDeviceUpdate;
 import nordicid.com.nurupdate.NurUpdateParams;
-import com.nordic_id.reader.nordic_id.Beeper;
 
 public class NurHelper {
     private static NurHelper instance;
@@ -339,12 +338,12 @@ public class NurHelper {
                                 mNurListener.onInventoryResult(tmp, jsonArray.toString());
                                 if (mAccExt.isSupported())
                                     mAccExt.beepAsync(300);
-                                Beeper.beep(Beeper.BEEP_300MS);
                                 mSingleTagDoTask = false;
                             }
                         }
                         if (System.currentTimeMillis() >= time_start + 7000) {
-                            Beeper.beep(Beeper.BEEP_300MS);
+                            if (mAccExt.isSupported())
+                                mAccExt.beepAsync(300);
                             mSingleTagDoTask = false;
                         }
                     } catch (Exception ex) {

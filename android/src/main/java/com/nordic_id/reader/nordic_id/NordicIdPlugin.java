@@ -54,6 +54,7 @@ public class NordicIdPlugin implements FlutterPlugin, MethodCallHandler, Activit
         channel.setMethodCallHandler(this);
         initReadEvent(flutterPluginBinding.getBinaryMessenger());
         initConnectionEvent(flutterPluginBinding.getBinaryMessenger());
+        initButtonEvent(flutterPluginBinding.getBinaryMessenger());
     }
 
     @Override
@@ -134,6 +135,43 @@ public class NordicIdPlugin implements FlutterPlugin, MethodCallHandler, Activit
                             @Override
                             public void onNext(Boolean isConnected) {
                                 eventSink.success(isConnected);
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+
+                            }
+
+                            @Override
+                            public void onComplete() {
+
+                            }
+                        });
+            }
+
+            @Override
+            public void onCancel(Object o) {
+
+            }
+        });
+    }
+
+     private static void initButtonEvent(BinaryMessenger messenger) {
+        final EventChannel connectionEventChannel = new EventChannel(messenger, "ButtonEvent");
+        connectionEventChannel.setStreamHandler(new EventChannel.StreamHandler() {
+            @Override
+            public void onListen(Object o, final EventChannel.EventSink eventSink) {
+                buttonEvent
+                        .subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<String>() {
+                            @Override
+                            public void onSubscribe(Disposable d) {
+
+                            }
+
+                            @Override
+                            public void onNext(String buttonEvent) {
+                                eventSink.success(buttonEvent);
                             }
 
                             @Override

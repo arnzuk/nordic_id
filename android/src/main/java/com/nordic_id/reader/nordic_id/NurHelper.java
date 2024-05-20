@@ -307,6 +307,7 @@ public class NurHelper {
                 mSingleTagDoTask = true;
                 mSingleTagRoundCount = 0;
                 mSingleTagFoundCount = 0;
+                mTagUnderReview = "";
                 long time_start = System.currentTimeMillis();
                 while (mSingleTagDoTask) {
                     try {

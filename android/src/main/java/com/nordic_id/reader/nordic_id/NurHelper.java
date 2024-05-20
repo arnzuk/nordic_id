@@ -6,10 +6,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.util.Log;
 import android.widget.Toast;
-
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
 import com.nordicid.nurapi.AccConfig;
 import com.nordicid.nurapi.AccSensorConfig;
 import com.nordicid.nurapi.AccessoryExtension;
@@ -40,14 +38,11 @@ import com.nordicid.nurapi.NurRespReaderInfo;
 import com.nordicid.nurapi.NurTag;
 import com.nordicid.nurapi.NurTagStorage;
 import com.nordicid.nurapi.BleScanner;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import nordicid.com.nurupdate.NurDeviceUpdate;
 import nordicid.com.nurupdate.NurUpdateParams;
 
@@ -55,6 +50,8 @@ public class NurHelper {
     private static NurHelper instance;
 
     private NurHelper() {
+        mTriggerDown = false;
+        mSingleTagDoTask = false;
     }
 
     public static NurHelper getInstance() {
@@ -63,32 +60,39 @@ public class NurHelper {
         return instance;
     }
 
-    public static final String TAG = "NUR_Helper"; //Can be used for filtering Log's at Logcat
+    public static final String TAG = "NUR_Helper"; // Can be used for filtering Log's at Logcat
     public Activity context;
     private final int APP_PERMISSION_REQ_CODE = 41;
-    //Need to keep track connection state with NurApi IsConnected
+    // Need to keep track connection state with NurApi IsConnected
     private boolean mIsConnected;
 
     private static NurApi mNurApi;
-    private static AccessoryExtension mAccExt; //accessories of reader like barcode scanner, beeper, vibration..
+    private static AccessoryExtension mAccExt; // accessories of reader like barcode scanner, beeper, vibration..
     static boolean mShowingSmartPair = false;
     static boolean mAppPaused = false;
     private NurApiAutoConnectTransport hAcTr;
 
-    //In here found tags stored
+    // In here found tags stored
     private NurTagStorage mTagStorage = new NurTagStorage();
 
-    //Controller of Trace tag
+    // Controller of Trace tag
     private TraceTagController mTraceController;
     private NurListener mNurListener;
     int mLastVal = 0;
 
-    //Selected EPC to Trace
+    // Selected EPC to Trace
     static String mSelectedEpc;
 
-    //These values will be shown in the UI
+    // These values will be shown in the UI
     private String mUiConnStatusText;
     private String mUiConnButtonText;
+
+    private boolean mTriggerDown;
+    private boolean mSingleTagDoTask;
+    private int mSingleTagRoundCount;
+    private int mSingleTagFoundCount;
+    private static String mTagUnderReview;
+    private int mSingleTempTxLevel;
 
     public static NurApi GetNurApi() {
         return mNurApi;
@@ -98,45 +102,73 @@ public class NurHelper {
         return mAccExt;
     }
 
-    //When connected, this flag is set depending if Accessories like barcode scan, beep etc supported.
+    // When connected, this flag is set depending if Accessories like barcode scan,
+    // beep etc supported.
     private static boolean mIsAccessorySupported;
 
     public static boolean IsAccessorySupported() {
         return mIsAccessorySupported;
     }
 
-
     public void requestBluetoothPermission() {
         /** Bluetooth Permission checks **/
-        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(context, android.Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(context, android.Manifest.permission.BLUETOOTH_ADVERTISE) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(context, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(context, android.Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(context, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(context,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(
+                        context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                ||
+                ContextCompat.checkSelfPermission(context,
+                        android.Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED
+                ||
+                ContextCompat.checkSelfPermission(
+                        context, android.Manifest.permission.BLUETOOTH_ADVERTISE) != PackageManager.PERMISSION_GRANTED
+                ||
+                ContextCompat.checkSelfPermission(context,
+                        android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
+                ||
+                ContextCompat.checkSelfPermission(context,
+                        android.Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED
+                ||
+                ContextCompat.checkSelfPermission(context,
+                        android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                ||
+                ContextCompat.checkSelfPermission(context,
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
-            if (ActivityCompat.shouldShowRequestPermissionRationale(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) ||
-                    ActivityCompat.shouldShowRequestPermissionRationale(context, android.Manifest.permission.ACCESS_FINE_LOCATION) ||
-                    ActivityCompat.shouldShowRequestPermissionRationale(context, android.Manifest.permission.BLUETOOTH_ADMIN) ||
-                    ActivityCompat.shouldShowRequestPermissionRationale(context, android.Manifest.permission.BLUETOOTH_ADVERTISE) ||
-                    ActivityCompat.shouldShowRequestPermissionRationale(context, android.Manifest.permission.BLUETOOTH_CONNECT) ||
-                    ActivityCompat.shouldShowRequestPermissionRationale(context, android.Manifest.permission.BLUETOOTH_SCAN) ||
-                    ActivityCompat.shouldShowRequestPermissionRationale(context, android.Manifest.permission.READ_EXTERNAL_STORAGE) ||
-                    ActivityCompat.shouldShowRequestPermissionRationale(context, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            ) {
+            if (ActivityCompat
+                    .shouldShowRequestPermissionRationale(context, android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                    ||
+                    ActivityCompat.shouldShowRequestPermissionRationale(context,
+                            android.Manifest.permission.ACCESS_FINE_LOCATION)
+                    ||
+                    ActivityCompat
+                            .shouldShowRequestPermissionRationale(context, android.Manifest.permission.BLUETOOTH_ADMIN)
+                    ||
+                    ActivityCompat.shouldShowRequestPermissionRationale(context,
+                            android.Manifest.permission.BLUETOOTH_ADVERTISE)
+                    ||
+                    ActivityCompat.shouldShowRequestPermissionRationale(context,
+                            android.Manifest.permission.BLUETOOTH_CONNECT)
+                    ||
+                    ActivityCompat
+                            .shouldShowRequestPermissionRationale(context, android.Manifest.permission.BLUETOOTH_SCAN)
+                    ||
+                    ActivityCompat.shouldShowRequestPermissionRationale(context,
+                            android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                    ||
+                    ActivityCompat.shouldShowRequestPermissionRationale(context,
+                            android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
             } else {
-                ActivityCompat.requestPermissions(context, new String[]{
-                                android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                                android.Manifest.permission.BLUETOOTH_ADMIN,
-                                android.Manifest.permission.BLUETOOTH_ADVERTISE,
-                                android.Manifest.permission.BLUETOOTH_CONNECT,
-                                android.Manifest.permission.BLUETOOTH_SCAN,
-                                android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                ActivityCompat.requestPermissions(context, new String[] {
+                        android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                        android.Manifest.permission.ACCESS_FINE_LOCATION,
+                        android.Manifest.permission.BLUETOOTH_ADMIN,
+                        android.Manifest.permission.BLUETOOTH_ADVERTISE,
+                        android.Manifest.permission.BLUETOOTH_CONNECT,
+                        android.Manifest.permission.BLUETOOTH_SCAN,
+                        android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE },
                         APP_PERMISSION_REQ_CODE);
             }
         }
@@ -146,16 +178,17 @@ public class NurHelper {
         this.context = context;
         requestBluetoothPermission();
 
-        //Bluetooth LE scanner need to find EXA's near
+        // Bluetooth LE scanner need to find EXA's near
         BleScanner.init(context);
 
         mIsConnected = false;
 
-        //Create NurApi handle.
+        // Create NurApi handle.
         mNurApi = new NurApi();
 
-        //Accessory extension contains device specific API like barcode read, beep etc..
-        //This included in NurApi.jar
+        // Accessory extension contains device specific API like barcode read, beep
+        // etc..
+        // This included in NurApi.jar
         mAccExt = new AccessoryExtension(mNurApi);
 
         // In this activity, we use mNurApiListener for receiving events
@@ -239,11 +272,90 @@ public class NurHelper {
         return "";
     }
 
-    //Set tag to be traced
+    // Set tag to be traced
     public void setTagTrace(String traceTagEPC) {
         mSelectedEpc = traceTagEPC;
         mTraceController.setTagTrace(mSelectedEpc);
 
+    }
+
+    static boolean isSameTag(String epc) {
+        if (epc.compareTo(mTagUnderReview) == 0)
+            return true;
+        else
+            mTagUnderReview = epc;
+        return false;
+    }
+
+    private void ScanSingleTagThread() {
+        Log.i(TAG, "ScanSingleTagThread");
+        if (mSingleTagDoTask || mTriggerDown)
+            return;
+        Thread sstThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mSingleTempTxLevel = mNurApi.getSetupTxLevel();
+                    mNurApi.setSetupTxLevel(NurApi.TXLEVEL_9);
+                } catch (Exception ex) {
+                    e.printStackTrace();
+                    return;
+                }
+                mSingleTagDoTask = true;
+                mSingleTagRoundCount = 0;
+                mSingleTagFoundCount = 0;
+                long time_start = System.currentTimeMillis();
+                while (mSingleTagDoTask) {
+                    try {
+                        mNurApi.clearIdBuffer();
+                        NurRespInventory resp = mNurApi.inventory(2, 4, 0);
+                        mSingleTagRoundCount++;
+                        if (resp.numTagsFound > 1) {
+                            mSingleTagFoundCount = 0;
+                        } else if (resp.numTagsFound == 1) {
+                            NurTag tag = mNurApi.fetchTagAt(true, 0);
+                            if (isSameTag(tag.getEpcString()))
+                                mSingleTagFoundCount++;
+                            else
+                                mSingleTagFoundCount = 1;
+                            mSingleTagFoundCount = 3;
+                            if (mSingleTagFoundCount == 3) {
+                                JSONObject json = new JSONObject();
+                                final JSONArray jsonArray = new JSONArray();
+                                try {
+                                    json.put("epc", tag.getEpcString());
+                                    json.put("rssi", Integer.toString(tag.getRssi()));
+                                    jsonArray.put(json);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                mNurListener.onInventoryResult(tmp, jsonArray.toString());
+                                if (MainActivity.IsAccessorySupported())
+                                    mAccExt.beepAsync(500);
+                                Beeper.beep(Beeper.BEEP_300MS);
+                                mSingleTagDoTask = false;
+                            }
+                        }
+                        if (System.currentTimeMillis() >= time_start + 7000) {
+                            if (MainActivity.IsAccessorySupported())
+                                mAccExt.beepAsync(300);
+                            else
+                                Beeper.beep(Beeper.BEEP_300MS);
+                            mSingleTagDoTask = false;
+                        }
+                    } catch (Exception ex) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+                    mNurApi.setSetupTxLevel(mSingleTempTxLevel);
+                } catch (Exception ex) {
+                    e.printStackTrace();
+                }
+                Beeper.beep(Beeper.BEEP_100MS);
+            }
+        });
+        sstThread.start();
     }
 
     /**
@@ -324,7 +436,7 @@ public class NurHelper {
 
             // Clear NurApi tag storage
             tagStorage.clear();
-            //Beeper.beep(Beeper.BEEP_40MS);
+            // Beeper.beep(Beeper.BEEP_40MS);
         }
     }
 
@@ -360,18 +472,19 @@ public class NurHelper {
     }
 
     public void destroy() {
-        //Kill connection when app killed
+        // Kill connection when app killed
         if (hAcTr != null) {
             hAcTr.onDestroy();
             hAcTr = null;
         }
     }
 
-
     /**
      * NurApi event handlers.
-     * NOTE: All NurApi events are called from NurApi thread, thus direct UI updates are not allowed.
-     * If you need to access UI controls, you can use runOnUiThread(Runnable) or Handler.
+     * NOTE: All NurApi events are called from NurApi thread, thus direct UI updates
+     * are not allowed.
+     * If you need to access UI controls, you can use runOnUiThread(Runnable) or
+     * Handler.
      */
     private final NurApiListener mNurApiListener = new NurApiListener() {
         @Override
@@ -444,16 +557,17 @@ public class NurHelper {
 
         @Override
         public void connectedEvent() {
-            //Device is connected.
-            // Let's find out is device provided with accessory support (Barcode reader, battery info...) like EXA
+            // Device is connected.
+            // Let's find out is device provided with accessory support (Barcode reader,
+            // battery info...) like EXA
             try {
                 if (mAccExt.isSupported()) {
-                    //Yes. Accessories supported
+                    // Yes. Accessories supported
                     mIsAccessorySupported = true;
-                    //Let's take name of device from Accessory api
+                    // Let's take name of device from Accessory api
                     mUiConnStatusText = "Connected to " + mAccExt.getConfig().name;
                 } else {
-                    //Accessories not supported. Probably fixed reader.
+                    // Accessories not supported. Probably fixed reader.
                     mIsAccessorySupported = false;
                     NurRespReaderInfo ri = mNurApi.getReaderInfo();
                     mUiConnStatusText = "Connected to " + ri.name;
@@ -464,14 +578,14 @@ public class NurHelper {
 
             mIsConnected = true;
             Log.i(TAG, "Connected!");
-            //Beeper.beep(Beeper.BEEP_100MS);
+            // Beeper.beep(Beeper.BEEP_100MS);
             mNurListener.onConnected(true);
 
-            //amr
-            //mUiConnStatusTextColor = Color.GREEN;
+            // amr
+            // mUiConnStatusTextColor = Color.GREEN;
             mUiConnButtonText = "DISCONNECT";
-            //amr
-            //showOnUI();
+            // amr
+            // showOnUI();
         }
 
         @Override
@@ -489,7 +603,7 @@ public class NurHelper {
         @Override
         public void IOChangeEvent(NurEventIOChange event) {
             Log.i(TAG, "Key " + event.source);
-             mNurListener.onIOChangeEvent(event);
+            mNurListener.onIOChangeEvent(event);
         }
 
         @Override
@@ -500,7 +614,7 @@ public class NurHelper {
         public void tagTrackingScanEvent(NurEventTagTrackingData event) {
         }
 
-        //@Override
+        // @Override
         public void tagTrackingChangeEvent(NurEventTagTrackingChange event) {
         }
     };
@@ -529,15 +643,15 @@ public class NurHelper {
     void showConnecting() {
         if (hAcTr != null) {
             mUiConnStatusText = "Connecting to " + hAcTr.getAddress();
-            //amr
+            // amr
             // mUiConnStatusTextColor = Color.YELLOW;
         } else {
             mUiConnStatusText = "Disconnected";
-            //amr
+            // amr
             // mUiConnStatusTextColor = Color.RED;
             mUiConnButtonText = "CONNECT";
         }
-        //amr
+        // amr
         // showOnUI();
     }
 
@@ -562,12 +676,12 @@ public class NurHelper {
         try {
             if (mNurApi.isConnected()) {
                 if (IsAccessorySupported()) {
-                    //There is accessories but is there sensors like ToF..
+                    // There is accessories but is there sensors like ToF..
                     ArrayList<AccSensorConfig> sensorList = mAccExt.accSensorEnumerate();
 
                     if (sensorList.size() > 0) {
-                        //Intent sensorIntent = new Intent(context, Sensor.class);
-                        //context.startActivityForResult(sensorIntent, 0);
+                        // Intent sensorIntent = new Intent(context, Sensor.class);
+                        // context.startActivityForResult(sensorIntent, 0);
                     } else
                         Toast.makeText(context, "No sensors", Toast.LENGTH_LONG).show();
                 } else
@@ -582,7 +696,8 @@ public class NurHelper {
 
     /**
      * Device firmware update from local zip file or from Nordic ID server
-     * Update packets are uncompressed zip files containing firmware files and UpdateInfo.json file.
+     * Update packets are uncompressed zip files containing firmware files and
+     * UpdateInfo.json file.
      * UpdateInfo.json described files and versions
      */
     public void updateFirmware(int selection) {
@@ -590,13 +705,13 @@ public class NurHelper {
         try {
             if (mNurApi.isConnected()) {
 
-                //Set parameters for Update job
+                // Set parameters for Update job
                 NurUpdateParams updateParams = new NurUpdateParams();
-                //NurApi instance
+                // NurApi instance
                 updateParams.setNurApi(mNurApi);
-                //Possible Nur accessory instance
+                // Possible Nur accessory instance
                 updateParams.setAccessoryExtension(GetAccessoryExtensionApi());
-                //If we are connected to device via Bluetooth, give current ble address.
+                // If we are connected to device via Bluetooth, give current ble address.
                 updateParams.setDeviceAddress(hAcTr.getAddress());
 
                 /**
@@ -606,15 +721,16 @@ public class NurHelper {
 
                 try {
                     if (selection == 0) {
-                        //Force user to select zip from the filesystem
+                        // Force user to select zip from the filesystem
                         updateParams.setZipPath("");
                     } else if (selection == 1) {
-                        //Load from Nordic ID server.
-                        updateParams.setZipPath("https://raw.githubusercontent.com/NordicID/nur_firmware/master/zip/NIDLatestFW.zip");
+                        // Load from Nordic ID server.
+                        updateParams.setZipPath(
+                                "https://raw.githubusercontent.com/NordicID/nur_firmware/master/zip/NIDLatestFW.zip");
                     } else
                         return;
 
-                    //Update params has been given. Show update Intent
+                    // Update params has been given. Show update Intent
                     showNurUpdateUI();
                 } catch (Exception e) {
                     Toast.makeText(context, "Error loading ZIP " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -628,21 +744,22 @@ public class NurHelper {
     }
 
     /**
-     * Handle barcode scan click. Start Barcode activity (only if reader support acessories). See Barcode.java
+     * Handle barcode scan click. Start Barcode activity (only if reader support
+     * acessories). See Barcode.java
      */
     public void showBarcodePage() {
         try {
             if (mNurApi.isConnected()) {
                 if (IsAccessorySupported()) {
-                    //Accessories is supported but all devices doesn't have barcode scanner
+                    // Accessories is supported but all devices doesn't have barcode scanner
                     AccConfig cfg = mAccExt.getConfig();
                     if (!cfg.hasImagerScanner()) {
                         Toast.makeText(context, "Barcode not supported!", Toast.LENGTH_LONG).show();
                         return;
                     }
-                    //Yes, barcode scanner found. Show activity to play with scanner.
-                    //Intent barcodeIntent = new Intent(context, Barcode.class);
-                    //context.startActivityForResult(barcodeIntent, 0);
+                    // Yes, barcode scanner found. Show activity to play with scanner.
+                    // Intent barcodeIntent = new Intent(context, Barcode.class);
+                    // context.startActivityForResult(barcodeIntent, 0);
                 } else
                     Toast.makeText(context, "No accessories on device!", Toast.LENGTH_LONG).show();
             } else {
@@ -653,15 +770,14 @@ public class NurHelper {
         }
     }
 
-
     /**
      * Handle inventory click. Start Inventory activity. See inventory.java
      */
     public void showInventoryPage() {
         try {
             if (mNurApi.isConnected()) {
-                //Intent inventoryIntent = new Intent(context, Inventory.class);
-                //context.startActivityForResult(inventoryIntent, 0);
+                // Intent inventoryIntent = new Intent(context, Inventory.class);
+                // context.startActivityForResult(inventoryIntent, 0);
             } else {
                 Toast.makeText(context, "Reader not connected!", Toast.LENGTH_LONG).show();
             }
@@ -670,14 +786,13 @@ public class NurHelper {
         }
     }
 
-
     /**
      * Handle tag write click. Start Write Tag activity. See Write.java
      */
     public void onWriteTagPage() {
         try {
             if (mNurApi.isConnected()) {
-                //Intent writeTagIntent = new Intent(context, WriteTag.class);
+                // Intent writeTagIntent = new Intent(context, WriteTag.class);
                 // context.startActivityForResult(writeTagIntent, 0);
             } else {
                 Toast.makeText(context, "Reader not connected!", Toast.LENGTH_LONG).show();
@@ -693,8 +808,8 @@ public class NurHelper {
     public void onTracePage() {
         try {
             if (mNurApi.isConnected()) {
-                //Intent traceIntent = new Intent(context, Trace.class);
-                //context.startActivityForResult(traceIntent, 0);
+                // Intent traceIntent = new Intent(context, Trace.class);
+                // context.startActivityForResult(traceIntent, 0);
             } else {
                 Toast.makeText(context, "Reader not connected!", Toast.LENGTH_LONG).show();
             }
@@ -711,10 +826,11 @@ public class NurHelper {
         try {
             if (mNurApi.isConnected()) {
 
-                if (IsAccessorySupported()) { //Only device with accessory can be power off by command
-                    mAccExt.powerDown(); //Power off device
+                if (IsAccessorySupported()) { // Only device with accessory can be power off by command
+                    mAccExt.powerDown(); // Power off device
                     Toast.makeText(context, "Device Power OFF!", Toast.LENGTH_LONG).show();
-                } else Toast.makeText(context, "PowerOff not supported!", Toast.LENGTH_LONG).show();
+                } else
+                    Toast.makeText(context, "PowerOff not supported!", Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(context, "Reader not connected!", Toast.LENGTH_LONG).show();
             }
@@ -729,7 +845,9 @@ public class NurHelper {
      * First is check if Bluetooth adapter is ON or OFF.
      * Then Bluetooth scan is performed to search devices from near.
      * User can select device from list to connect.
-     * It's useful to store last connected device MAC to persistent memory inorder to reconnect later on to same device without selecting from list. This demo doesn't do MAC storing.
+     * It's useful to store last connected device MAC to persistent memory inorder
+     * to reconnect later on to same device without selecting from list. This demo
+     * doesn't do MAC storing.
      */
     public void connect() {
         if (mNurApi.isConnected()) {
@@ -803,14 +921,15 @@ public class NurHelper {
 
                     showConnecting();
 
-                    //If you want connect to same device automatically later on, you can save 'strAddress" and use that for connecting at app startup for example.
-                    //saveSettings(spec);
+                    // If you want connect to same device automatically later on, you can save
+                    // 'strAddress" and use that for connecting at app startup for example.
+                    // saveSettings(spec);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
 
             }
-            break;
+                break;
         }
     }
 

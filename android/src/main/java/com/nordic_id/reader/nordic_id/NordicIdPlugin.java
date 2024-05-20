@@ -29,7 +29,8 @@ import com.nordicid.nurapi.NurEventIOChange;
 /**
  * NordicIdPlugin
  */
-public class NordicIdPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.ActivityResultListener, NurListener {
+public class NordicIdPlugin
+        implements FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.ActivityResultListener, NurListener {
     private MethodChannel channel;
     private static final String CHANNEL_Initialize = "Initialize";
     private static final String CHANNEL_Connect = "Connect";
@@ -50,6 +51,7 @@ public class NordicIdPlugin implements FlutterPlugin, MethodCallHandler, Activit
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+
         channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "nordic_id");
         channel.setMethodCallHandler(this);
         initReadEvent(flutterPluginBinding.getBinaryMessenger());
@@ -99,17 +101,15 @@ public class NordicIdPlugin implements FlutterPlugin, MethodCallHandler, Activit
             case CHANNEL_RefreshTracing:
                 try {
                     if (NurHelper.getInstance().isTracingTag()) {
-                        //Need to stop tag tracing
                         NurHelper.getInstance().stopTrace();
                         return;
                     }
-                    NurHelper.getInstance().clearInventoryReadings(); //Clear all from old stuff
-                    NurHelper.getInstance().doSingleInventory(); //Make single round inventory.
+                    NurHelper.getInstance().clearInventoryReadings(); // Clear all from old stuff
+                    NurHelper.getInstance().doSingleInventory(); // Make single round inventory.
                 } catch (Exception ex) {
                     Toast.makeText(activity, ex.getMessage(), Toast.LENGTH_LONG).show();
                     result.success(false);
                 }
-                //NurHelper.getInstance().destroy();
                 result.success(true);
                 break;
             default:
@@ -154,7 +154,7 @@ public class NordicIdPlugin implements FlutterPlugin, MethodCallHandler, Activit
         });
     }
 
-     private static void initButtonEvent(BinaryMessenger messenger) {
+    private static void initButtonEvent(BinaryMessenger messenger) {
         final EventChannel connectionEventChannel = new EventChannel(messenger, "ButtonEvent");
         connectionEventChannel.setStreamHandler(new EventChannel.StreamHandler() {
             @Override
@@ -228,7 +228,6 @@ public class NordicIdPlugin implements FlutterPlugin, MethodCallHandler, Activit
         });
     }
 
-
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         channel.setMethodCallHandler(null);
@@ -269,7 +268,7 @@ public class NordicIdPlugin implements FlutterPlugin, MethodCallHandler, Activit
     }
 
     @Override
-    public void onInventoryResult(HashMap<String, String> tags,String jsonString) {
+    public void onInventoryResult(HashMap<String, String> tags, String jsonString) {
         if (tags != null)
             tagsStatus.onNext(jsonString);
     }
@@ -277,7 +276,6 @@ public class NordicIdPlugin implements FlutterPlugin, MethodCallHandler, Activit
     @Override
     public void onDetachedFromActivityForConfigChanges() {
     }
-
 
     @Override
     public void onDetachedFromActivity() {

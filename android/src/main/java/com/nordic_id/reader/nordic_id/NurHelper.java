@@ -38,6 +38,7 @@ import com.nordicid.nurapi.NurRespReaderInfo;
 import com.nordicid.nurapi.NurTag;
 import com.nordicid.nurapi.NurTagStorage;
 import com.nordicid.nurapi.BleScanner;
+import com.nordicid.nurapi.NurRespInventory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -288,7 +289,7 @@ public class NurHelper {
         return false;
     }
 
-    private void ScanSingleTagThread() {
+    public void ScanSingleTagThread() {
         Log.i(TAG, "ScanSingleTagThread");
         if (mSingleTagDoTask || mTriggerDown)
             return;
@@ -299,7 +300,7 @@ public class NurHelper {
                     mSingleTempTxLevel = mNurApi.getSetupTxLevel();
                     mNurApi.setSetupTxLevel(NurApi.TXLEVEL_9);
                 } catch (Exception ex) {
-                    e.printStackTrace();
+                    ex.printStackTrace();
                     return;
                 }
                 mSingleTagDoTask = true;
@@ -324,6 +325,10 @@ public class NurHelper {
                                 JSONObject json = new JSONObject();
                                 final JSONArray jsonArray = new JSONArray();
                                 try {
+                                    tmp = new HashMap<String, String>();
+                                    tmp.put("epc", tag.getEpcString());
+                                    tmp.put("rssi", Integer.toString(tag.getRssi()));
+                                    tag.setUserdata(tmp);
                                     json.put("epc", tag.getEpcString());
                                     json.put("rssi", Integer.toString(tag.getRssi()));
                                     jsonArray.put(json);
@@ -331,27 +336,22 @@ public class NurHelper {
                                     e.printStackTrace();
                                 }
                                 mNurListener.onInventoryResult(tmp, jsonArray.toString());
-                                if (MainActivity.IsAccessorySupported())
-                                    mAccExt.beepAsync(500);
                                 Beeper.beep(Beeper.BEEP_300MS);
                                 mSingleTagDoTask = false;
                             }
                         }
                         if (System.currentTimeMillis() >= time_start + 7000) {
-                            if (MainActivity.IsAccessorySupported())
-                                mAccExt.beepAsync(300);
-                            else
-                                Beeper.beep(Beeper.BEEP_300MS);
+                            Beeper.beep(Beeper.BEEP_300MS);
                             mSingleTagDoTask = false;
                         }
                     } catch (Exception ex) {
-                        e.printStackTrace();
+                        ex.printStackTrace();
                     }
                 }
                 try {
                     mNurApi.setSetupTxLevel(mSingleTempTxLevel);
                 } catch (Exception ex) {
-                    e.printStackTrace();
+                    ex.printStackTrace();
                 }
                 Beeper.beep(Beeper.BEEP_100MS);
             }

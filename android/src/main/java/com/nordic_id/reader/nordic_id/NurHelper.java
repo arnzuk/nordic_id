@@ -355,7 +355,8 @@ public class NurHelper {
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
-                Beeper.beep(Beeper.BEEP_100MS);
+                if (mAccExt.isSupported())
+                    mAccExt.beepAsync(300);
             }
         });
         sstThread.start();
@@ -432,14 +433,10 @@ public class NurHelper {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-
                     mNurListener.onInventoryResult(tmp, jsonArray.toString());
                 }
             }
-
-            // Clear NurApi tag storage
             tagStorage.clear();
-            // Beeper.beep(Beeper.BEEP_40MS);
         }
     }
 
@@ -578,12 +575,9 @@ public class NurHelper {
             } catch (Exception ex) {
                 mUiConnStatusText = ex.getMessage();
             }
-
             mIsConnected = true;
             Log.i(TAG, "Connected!");
-            // Beeper.beep(Beeper.BEEP_100MS);
             mNurListener.onConnected(true);
-
             // amr
             // mUiConnStatusTextColor = Color.GREEN;
             mUiConnButtonText = "DISCONNECT";

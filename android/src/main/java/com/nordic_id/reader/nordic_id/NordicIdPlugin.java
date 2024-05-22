@@ -42,6 +42,10 @@ public class NordicIdPlugin
     private static final String CHANNEL_IsConnected = "IsConnected";
     private static final String CHANNEL_ConnectionStatus = "ConnectionStatus";
     private static final String CHANNEL_TagsStatus = "TagsStatus";
+    private static final String CHANNEL_StartSingleScan = "StartSingleScan";
+    private static final String CHANNEL_StartInventoryScan = "StartInventoryScan";
+    private static final String CHANNEL_StopInventoryScan = "StopInventoryScan";
+    private static final String CHANNEL_StartBarcodeScan = "StartBarcodeScan";
 
     private static final PublishSubject<Boolean> connectionStatus = PublishSubject.create();
     private static final PublishSubject<String> tagsStatus = PublishSubject.create();
@@ -102,16 +106,28 @@ public class NordicIdPlugin
                 try {
                     if (NurHelper.getInstance().isTracingTag()) {
                         NurHelper.getInstance().stopTrace();
-                        return;
                     }
-                    NurHelper.getInstance().clearInventoryReadings(); // Clear all from old stuff
-                    //NurHelper.getInstance().doSingleInventory(); // Make single round inventory.
+                    NurHelper.getInstance().clearInventoryReadings();
+                    // NurHelper.getInstance().doSingleInventory(); // Make single round inventory.
                     NurHelper.getInstance().ScanSingleTagThread();
                 } catch (Exception ex) {
                     Toast.makeText(activity, ex.getMessage(), Toast.LENGTH_LONG).show();
                     result.success(false);
                 }
                 result.success(true);
+                break;
+            case CHANNEL_StartSingleScan:
+                try {
+                    if (NurHelper.getInstance().isTracingTag()) {
+                        NurHelper.getInstance().stopTrace();
+                    }
+                    NurHelper.getInstance().clearInventoryReadings();
+                    NurHelper.getInstance().ScanSingleTagThread();
+                } catch (Exception ex) {
+                    result.success(false);
+                    ex.printStackTrace();
+                }
+                result.success(false);
                 break;
             default:
                 result.notImplemented();

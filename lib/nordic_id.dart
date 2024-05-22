@@ -51,6 +51,22 @@ class NordicId {
     return _channel.invokeMethod('RefreshTracing');
   }
 
+  static Future<String?> get startSingleScan async {
+    return _channel.invokeMethod('StartSingleScan');
+  }
+
+  static Future<String?> get startInventoryScan async {
+    return _channel.invokeMethod('StartInventoryScan');
+  }
+
+  static Future<String?> get stopInventoryScan async {
+    return _channel.invokeMethod('StopInventoryScan');
+  }
+
+  static Future<String?> get startBarcodeScan async {
+    return _channel.invokeMethod('StartBarcodeScan');
+  }
+
   /* static Future<bool?> setWorkArea(String value) async {
     return _channel
         .invokeMethod('setWorkArea', <String, String>{'value': value});

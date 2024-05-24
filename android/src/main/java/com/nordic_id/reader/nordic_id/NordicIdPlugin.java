@@ -111,7 +111,7 @@ public class NordicIdPlugin
                     // NurHelper.getInstance().doSingleInventory(); // Make single round inventory.
                     NurHelper.getInstance().ScanSingleTagThread();
                 } catch (Exception ex) {
-                    //Toast.makeText(activity, ex.getMessage(), Toast.LENGTH_LONG).show();
+                    // Toast.makeText(activity, ex.getMessage(), Toast.LENGTH_LONG).show();
                     result.success(false);
                     ex.printStackTrace();
                 }
@@ -287,8 +287,7 @@ public class NordicIdPlugin
 
     @Override
     public void onInventoryResult(HashMap<String, String> tags, String jsonString) {
-        if (tags != null)
-            tagsStatus.onNext(jsonString);
+        tagsStatus.onNext(jsonString);
     }
 
     @Override

@@ -345,6 +345,7 @@ public class NurHelper {
                             if (mAccExt.isSupported())
                                 mAccExt.beepAsync(300);
                             mSingleTagDoTask = false;
+                            mNurListener.onInventoryResult(null, null);
                         }
                     } catch (Exception ex) {
                         ex.printStackTrace();

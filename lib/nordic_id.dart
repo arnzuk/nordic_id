@@ -1,14 +1,7 @@
 import 'package:flutter/services.dart';
 
-//import 'nordic_id_platform_interface.dart';
-
 class NordicId {
   static const _channel = MethodChannel('nordic_id');
-
-/*   Future<String?> getPlatformVersion() {
-    return NordicIdPlatform.instance.getPlatformVersion();
-  }
- */
 
   static Future<String?> getPlatformVersion() async {
     final version = await _channel.invokeMethod<String>('getPlatformVersion');
@@ -66,9 +59,4 @@ class NordicId {
   static Future<String?> get startBarcodeScan async {
     return _channel.invokeMethod('StartBarcodeScan');
   }
-
-  /* static Future<bool?> setWorkArea(String value) async {
-    return _channel
-        .invokeMethod('setWorkArea', <String, String>{'value': value});
-  } */
 }

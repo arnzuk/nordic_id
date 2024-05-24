@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 class TagEpc {
-  final String epc;
-  final String rssi;
+  final String? epc;
+  final String? rssi;
   final bool found;
 
   TagEpc({
@@ -14,7 +14,7 @@ class TagEpc {
   factory TagEpc.fromMap(Map<String, dynamic> json) => TagEpc(
         epc: json["epc"],
         rssi: json["rssi"],
-        found: bool.parse(json["found"]),
+        found: json["found"],
       );
 
   Map<String, dynamic> toMap() => {

@@ -111,8 +111,9 @@ public class NordicIdPlugin
                     // NurHelper.getInstance().doSingleInventory(); // Make single round inventory.
                     NurHelper.getInstance().ScanSingleTagThread();
                 } catch (Exception ex) {
-                    Toast.makeText(activity, ex.getMessage(), Toast.LENGTH_LONG).show();
+                    //Toast.makeText(activity, ex.getMessage(), Toast.LENGTH_LONG).show();
                     result.success(false);
+                    ex.printStackTrace();
                 }
                 result.success(true);
                 break;
@@ -127,7 +128,7 @@ public class NordicIdPlugin
                     result.success(false);
                     ex.printStackTrace();
                 }
-                result.success(false);
+                result.success(true);
                 break;
             default:
                 result.notImplemented();

@@ -51,7 +51,7 @@ class NordicId {
     return _channel.invokeMethod('RefreshTracing');
   }
 
-  static Future<String?> get startSingleScan async {
+  static Future<bool?> get startSingleScan async {
     return _channel.invokeMethod('StartSingleScan');
   }
 

@@ -331,6 +331,7 @@ public class NurHelper {
                                     tag.setUserdata(tmp);
                                     json.put("epc", tag.getEpcString());
                                     json.put("rssi", Integer.toString(tag.getRssi()));
+                                    json.put("found", true);
                                     jsonArray.put(json);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -345,7 +346,17 @@ public class NurHelper {
                             if (mAccExt.isSupported())
                                 mAccExt.beepAsync(300);
                             mSingleTagDoTask = false;
-                            mNurListener.onInventoryResult(null, null);
+                            JSONObject json = new JSONObject();
+                            final JSONArray jsonArray = new JSONArray();
+                            try {
+                                json.put("epc", null);
+                                json.put("rssi", null);
+                                json.put("found", false);
+                                jsonArray.put(json);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            mNurListener.onInventoryResult(null, jsonArray);
                         }
                     } catch (Exception ex) {
                         ex.printStackTrace();

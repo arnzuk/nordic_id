@@ -356,7 +356,7 @@ public class NurHelper {
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
-                            mNurListener.onInventoryResult(null, jsonArray);
+                            mNurListener.onInventoryResult(null, jsonArray.toString());
                         }
                     } catch (Exception ex) {
                         ex.printStackTrace();

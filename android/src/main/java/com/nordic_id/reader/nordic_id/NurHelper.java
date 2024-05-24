@@ -352,8 +352,6 @@ public class NurHelper {
                 }
                 try {
                     mNurApi.setSetupTxLevel(mSingleTempTxLevel);
-                    if (mAccExt.isSupported())
-                        mAccExt.beepAsync(300);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }

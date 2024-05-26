@@ -372,4 +372,10 @@ public class NordicIdPlugin
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void onBarcodeResult(String barcode) {
+        barcodeStatus.onNext(barcode);
+
+    }
 }

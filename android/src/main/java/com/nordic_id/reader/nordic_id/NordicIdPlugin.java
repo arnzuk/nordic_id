@@ -376,6 +376,5 @@ public class NordicIdPlugin
     @Override
     public void onBarcodeResult(String barcode) {
         barcodeStatus.onNext(barcode);
-
     }
 }

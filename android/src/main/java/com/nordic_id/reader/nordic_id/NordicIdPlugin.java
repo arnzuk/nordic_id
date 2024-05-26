@@ -52,7 +52,7 @@ public class NordicIdPlugin
     private static final PublishSubject<Boolean> connectionStatus = PublishSubject.create();
     private static final PublishSubject<String> tagsStatus = PublishSubject.create();
     private static final PublishSubject<String> buttonEvent = PublishSubject.create();
-    private static final PublishSubject<Atring> barcodeStatus = PublishSubject.create();
+    private static final PublishSubject<String> barcodeStatus = PublishSubject.create();
 
     Activity activity;
 

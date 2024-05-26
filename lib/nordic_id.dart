@@ -11,6 +11,7 @@ class NordicId {
   static const EventChannel tagsStatusStream = EventChannel('TagsStatus');
   static const EventChannel connectionStatusStream = EventChannel('ConnectionStatus');
   static const EventChannel buttonEventsStream = EventChannel('ButtonEvent');
+  static const EventChannel barcodeStatusStream = EventChannel('BarcodeStatus');
 
   static Future<bool?> get initialize async {
     return _channel.invokeMethod('Initialize');

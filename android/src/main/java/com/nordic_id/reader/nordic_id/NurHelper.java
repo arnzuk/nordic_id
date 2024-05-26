@@ -39,6 +39,8 @@ import com.nordicid.nurapi.NurTag;
 import com.nordicid.nurapi.NurTagStorage;
 import com.nordicid.nurapi.BleScanner;
 import com.nordicid.nurapi.NurRespInventory;
+import com.nordicid.nurapi.AccBarcodeResultListener;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

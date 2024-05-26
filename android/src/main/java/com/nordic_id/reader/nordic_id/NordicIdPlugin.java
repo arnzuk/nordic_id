@@ -128,7 +128,6 @@ public class NordicIdPlugin
                     result.success(false);
                     ex.printStackTrace();
                 }
-
                 break;
             case CHANNEL_StartBarcodeScan:
                 try {

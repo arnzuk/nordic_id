@@ -47,21 +47,23 @@ public class NordicIdPlugin
     private static final String CHANNEL_StopInventoryScan = "StopInventoryScan";
     private static final String CHANNEL_StartBarcodeScan = "StartBarcodeScan";
     private static final String CHANNEL_BarcodeScan = "BarcodeScan";
+    private static final String CHANNEL_BarcodeStatus = "BarcodeStatus";
 
     private static final PublishSubject<Boolean> connectionStatus = PublishSubject.create();
     private static final PublishSubject<String> tagsStatus = PublishSubject.create();
     private static final PublishSubject<String> buttonEvent = PublishSubject.create();
+    private static final PublishSubject<Atring> barcodeStatus = PublishSubject.create();
 
     Activity activity;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-
         channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "nordic_id");
         channel.setMethodCallHandler(this);
         initReadEvent(flutterPluginBinding.getBinaryMessenger());
         initConnectionEvent(flutterPluginBinding.getBinaryMessenger());
         initButtonEvent(flutterPluginBinding.getBinaryMessenger());
+        initBarcodeEvent(flutterPluginBinding.getBinaryMessenger());
     }
 
     @Override
@@ -226,6 +228,43 @@ public class NordicIdPlugin
         });
     }
 
+    private static void initBarcodeEvent(BinaryMessenger messenger) {
+        final EventChannel scannerEventChannel = new EventChannel(messenger, CHANNEL_BarcodeStatus);
+        scannerEventChannel.setStreamHandler(new EventChannel.StreamHandler() {
+            @Override
+            public void onListen(Object o, final EventChannel.EventSink eventSink) {
+                barcodeStatus
+                        .subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<String>() {
+                            @Override
+                            public void onSubscribe(Disposable d) {
+
+                            }
+
+                            @Override
+                            public void onNext(String barcode) {
+                                eventSink.success(barcode);
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+
+                            }
+
+                            @Override
+                            public void onComplete() {
+
+                            }
+                        });
+            }
+
+            @Override
+            public void onCancel(Object o) {
+
+            }
+        });
+    }
+
     private static void initReadEvent(BinaryMessenger messenger) {
         final EventChannel scannerEventChannel = new EventChannel(messenger, CHANNEL_TagsStatus);
         scannerEventChannel.setStreamHandler(new EventChannel.StreamHandler() {
@@ -283,6 +322,7 @@ public class NordicIdPlugin
     public void init() {
         NurHelper.getInstance().init(activity);
         NurHelper.getInstance().initReading(this);
+        NurHelper.getInstance().initBarcodeReading();
     }
 
     @Override

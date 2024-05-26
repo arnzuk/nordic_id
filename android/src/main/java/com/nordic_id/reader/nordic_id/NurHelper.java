@@ -203,6 +203,10 @@ public class NurHelper {
         mUiConnButtonText = "CONNECT";
     }
 
+    public void initBarcodeReading () {
+        mAccExt.registerBarcodeResultListener(mBarcodeResult);
+    }
+
     public void initReading(NurListener nurListener) {
         setNurListener(nurListener);
         mTraceController = new TraceTagController(mNurApi);
@@ -309,6 +313,7 @@ public class NurHelper {
         try {
             if (mScanning) {
                 mScanning = false;
+                return;
             }
             mAiming = false;
             mAccExt.imagerAIM(mAiming);
@@ -490,7 +495,6 @@ public class NurHelper {
     }
 
     public void reset() {
-        // In this activity, we use mNurApiListener for receiving events
         mAppPaused = false;
         mNurApi.setListener(mNurApiListener);
         if (!mNurApi.isConnected() && mIsConnected) {
@@ -513,12 +517,27 @@ public class NurHelper {
     }
 
     public void destroy() {
-        // Kill connection when app killed
         if (hAcTr != null) {
             hAcTr.onDestroy();
             hAcTr = null;
         }
     }
+
+    private AccBarcodeResultListener mBarcodeResult = new AccBarcodeResultListener() {
+        @Override
+        public void onBarcodeResult(AccBarcodeResult accBarcodeResult) {
+            mNurListener.onBarcodeResult(accBarcodeResult.strBarcode);
+            try {
+                mAccExt.beepAsync(100);
+                if (mAccExt.getConfig().hasVibrator()) {
+                    mAccExt.vibrate(200);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            mScanning = false;
+        }
+    };
 
     /**
      * NurApi event handlers.

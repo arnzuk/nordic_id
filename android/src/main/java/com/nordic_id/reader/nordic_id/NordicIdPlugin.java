@@ -46,6 +46,7 @@ public class NordicIdPlugin
     private static final String CHANNEL_StartInventoryScan = "StartInventoryScan";
     private static final String CHANNEL_StopInventoryScan = "StopInventoryScan";
     private static final String CHANNEL_StartBarcodeScan = "StartBarcodeScan";
+    private static final String CHANNEL_BarcodeScan = "BarcodeScan";
 
     private static final PublishSubject<Boolean> connectionStatus = PublishSubject.create();
     private static final PublishSubject<String> tagsStatus = PublishSubject.create();
@@ -108,10 +109,8 @@ public class NordicIdPlugin
                         NurHelper.getInstance().stopTrace();
                     }
                     NurHelper.getInstance().clearInventoryReadings();
-                    // NurHelper.getInstance().doSingleInventory(); // Make single round inventory.
                     NurHelper.getInstance().ScanSingleTagThread();
                 } catch (Exception ex) {
-                    // Toast.makeText(activity, ex.getMessage(), Toast.LENGTH_LONG).show();
                     result.success(false);
                     ex.printStackTrace();
                 }
@@ -124,11 +123,30 @@ public class NordicIdPlugin
                     }
                     NurHelper.getInstance().clearInventoryReadings();
                     NurHelper.getInstance().ScanSingleTagThread();
+                    result.success(true);
                 } catch (Exception ex) {
                     result.success(false);
                     ex.printStackTrace();
                 }
-                result.success(true);
+
+                break;
+            case CHANNEL_StartBarcodeScan:
+                try {
+                    NurHelper.getInstance().StartBarcodeScan();
+                    result.success(true);
+                } catch (Exception ex) {
+                    result.success(false);
+                    ex.printStackTrace();
+                }
+                break;
+            case CHANNEL_BarcodeScan:
+                try {
+                    NurHelper.getInstance().ScanBarcode();
+                    result.success(true);
+                } catch (Exception ex) {
+                    result.success(false);
+                    ex.printStackTrace();
+                }
                 break;
             default:
                 result.notImplemented();

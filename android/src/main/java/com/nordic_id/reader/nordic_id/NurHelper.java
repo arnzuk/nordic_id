@@ -53,6 +53,8 @@ public class NurHelper {
     private NurHelper() {
         mTriggerDown = false;
         mSingleTagDoTask = false;
+        mScanning = false;
+        mAiming = false;
     }
 
     public static NurHelper getInstance() {
@@ -94,6 +96,8 @@ public class NurHelper {
     private int mSingleTagFoundCount;
     private static String mTagUnderReview;
     private int mSingleTempTxLevel;
+    private boolean mScanning;
+    private boolean mAiming;
 
     public static NurApi GetNurApi() {
         return mNurApi;
@@ -286,6 +290,25 @@ public class NurHelper {
         else
             mTagUnderReview = epc;
         return false;
+    }
+
+    public void StartBarcodeScan() {
+        if (mScanning) {
+            mAccExt.cancelBarcodeAsync();
+        } else {
+            mAiming = true;
+            mAccExt.imagerAIM(mAiming);
+        }
+    }
+
+    public void ScanBarcode() {
+        if (mScanning) {
+            mScanning = false;
+        }
+        mAiming = false;
+        mAccExt.imagerAIM(mAiming);
+        mAccExt.readBarcodeAsync(5000);
+        mScanning = true;
     }
 
     public void ScanSingleTagThread() {

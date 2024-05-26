@@ -293,22 +293,30 @@ public class NurHelper {
     }
 
     public void StartBarcodeScan() {
-        if (mScanning) {
-            mAccExt.cancelBarcodeAsync();
-        } else {
-            mAiming = true;
-            mAccExt.imagerAIM(mAiming);
+        try {
+            if (mScanning) {
+                mAccExt.cancelBarcodeAsync();
+            } else {
+                mAiming = true;
+                mAccExt.imagerAIM(mAiming);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 
     public void ScanBarcode() {
-        if (mScanning) {
-            mScanning = false;
+        try {
+            if (mScanning) {
+                mScanning = false;
+            }
+            mAiming = false;
+            mAccExt.imagerAIM(mAiming);
+            mAccExt.readBarcodeAsync(5000);
+            mScanning = true;
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        mAiming = false;
-        mAccExt.imagerAIM(mAiming);
-        mAccExt.readBarcodeAsync(5000);
-        mScanning = true;
     }
 
     public void ScanSingleTagThread() {

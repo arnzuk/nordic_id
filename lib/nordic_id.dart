@@ -56,11 +56,11 @@ class NordicId {
     return _channel.invokeMethod('StopInventoryScan');
   }
 
-  static Future<String?> get startBarcodeScan async {
+  static Future<bool?> get startBarcodeScan async {
     return _channel.invokeMethod('StartBarcodeScan');
   }
 
-  static Future<String?> get barcodeScan async {
+  static Future<bool?> get barcodeScan async {
     return _channel.invokeMethod('BarcodeScan');
   }
 }

@@ -48,6 +48,7 @@ public class NordicIdPlugin
     private static final String CHANNEL_StartBarcodeScan = "StartBarcodeScan";
     private static final String CHANNEL_BarcodeScan = "BarcodeScan";
     private static final String CHANNEL_BarcodeStatus = "BarcodeStatus";
+    private static final String CHANNEL_StopBarcodeScan = "StopBarcodeScan";
 
     private static final PublishSubject<Boolean> connectionStatus = PublishSubject.create();
     private static final PublishSubject<String> tagsStatus = PublishSubject.create();
@@ -143,6 +144,15 @@ public class NordicIdPlugin
             case CHANNEL_BarcodeScan:
                 try {
                     NurHelper.getInstance().ScanBarcode();
+                    result.success(true);
+                } catch (Exception ex) {
+                    result.success(false);
+                    ex.printStackTrace();
+                }
+                break;
+            case CHANNEL_StopBarcodeScan:
+                try {
+                    NurHelper.getInstance().StopBarcodeScan();
                     result.success(true);
                 } catch (Exception ex) {
                     result.success(false);

@@ -206,7 +206,7 @@ public class NurHelper {
         mUiConnButtonText = "CONNECT";
     }
 
-    public void initBarcodeReading () {
+    public void initBarcodeReading() {
         mAccExt.registerBarcodeResultListener(mBarcodeResult);
     }
 
@@ -297,6 +297,14 @@ public class NurHelper {
         else
             mTagUnderReview = epc;
         return false;
+    }
+
+    public void StopBarcodeScan() {
+        try {
+            mAccExt.cancelBarcodeAsync();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     public void StartBarcodeScan() {

@@ -167,6 +167,7 @@ public class NordicIdPlugin
                 String tag = call.argument("tag");
                 NurHelper.getInstance().setTagTrace(tag);
                 String r = NurHelper.getInstance().startTrace();
+                Log.i(TAG, tag);
                 result.success(r);
                 break;
             default:

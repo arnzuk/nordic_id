@@ -58,6 +58,8 @@ public class NordicIdPlugin
     private static final PublishSubject<String> barcodeStatus = PublishSubject.create();
     private static final PublishSubject<Integer> traceEvent = PublishSubject.create();
 
+    public static final String TAG = "NUR_Helper";
+
     Activity activity;
 
     @Override

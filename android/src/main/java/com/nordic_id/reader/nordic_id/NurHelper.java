@@ -214,6 +214,7 @@ public class NurHelper {
         setNurListener(nurListener);
         mTraceController = new TraceTagController(mNurApi);
         mTraceController.setListener(new TraceTagController.TraceTagListener() {
+
             @Override
             public void traceTagEvent(TraceTagController.TracedTagInfo data) {
                 int scaledRssi = data.scaledRssi;
@@ -245,16 +246,10 @@ public class NurHelper {
         mLastVal = rssiValue;
     }
 
-    /**
-     * Is tracing/reading tags.
-     */
     public boolean isTracingTag() {
         return mTraceController.isTracingTag();
     }
 
-    /**
-     * Stop tracing.
-     */
     public void stopTrace() {
         if (mTraceController.isTracingTag()) {
             mTraceController.stopTagTrace();
@@ -262,9 +257,6 @@ public class NurHelper {
         }
     }
 
-    /**
-     * Start tracing. EPC has been selected from list.
-     */
     public String startTrace() {
         try {
             if (!mTraceController.isTracingTag()) {
@@ -280,15 +272,12 @@ public class NurHelper {
         } catch (Exception ex) {
             return "Reader error";
         }
-
         return "";
     }
 
-    // Set tag to be traced
     public void setTagTrace(String traceTagEPC) {
         mSelectedEpc = traceTagEPC;
         mTraceController.setTagTrace(mSelectedEpc);
-
     }
 
     static boolean isSameTag(String epc) {

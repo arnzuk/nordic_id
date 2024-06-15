@@ -49,11 +49,13 @@ public class NordicIdPlugin
     private static final String CHANNEL_BarcodeScan = "BarcodeScan";
     private static final String CHANNEL_BarcodeStatus = "BarcodeStatus";
     private static final String CHANNEL_StopBarcodeScan = "StopBarcodeScan";
+    private static final String ChANNEL_StartTrace = "StartTrace";
 
     private static final PublishSubject<Boolean> connectionStatus = PublishSubject.create();
     private static final PublishSubject<String> tagsStatus = PublishSubject.create();
     private static final PublishSubject<String> buttonEvent = PublishSubject.create();
     private static final PublishSubject<String> barcodeStatus = PublishSubject.create();
+    private static final PublishSubject<Integer> traceEvent = PublishSubject.create();
 
     Activity activity;
 
@@ -65,6 +67,7 @@ public class NordicIdPlugin
         initConnectionEvent(flutterPluginBinding.getBinaryMessenger());
         initButtonEvent(flutterPluginBinding.getBinaryMessenger());
         initBarcodeEvent(flutterPluginBinding.getBinaryMessenger());
+        initTraceEvent(flutterPluginBinding.getBinaryMessenger());
     }
 
     @Override
@@ -74,6 +77,7 @@ public class NordicIdPlugin
         } else {
             handleMethods(call, result);
         }
+
     }
 
     private void handleMethods(MethodCall call, Result result) {
@@ -159,6 +163,12 @@ public class NordicIdPlugin
                     ex.printStackTrace();
                 }
                 break;
+            case ChANNEL_StartTrace:
+                String tag = call.argument("tag");
+                NurHelper.getInstance().setTagTrace(tag);
+                String r = NurHelper.getInstance().startTrace();
+                result.success(r);
+                break;
             default:
                 result.notImplemented();
         }
@@ -217,6 +227,44 @@ public class NordicIdPlugin
                             @Override
                             public void onNext(String buttonEvent) {
                                 eventSink.success(buttonEvent);
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+
+                            }
+
+                            @Override
+                            public void onComplete() {
+
+                            }
+                        });
+            }
+
+            @Override
+            public void onCancel(Object o) {
+
+            }
+        });
+    }
+
+    private static void initTraceEvent(BinaryMessenger messenger) {
+        final EventChannel connectionEventChannel = new EventChannel(messenger, "TraceEvent");
+        connectionEventChannel.setStreamHandler(new EventChannel.StreamHandler() {
+            @Override
+            public void onListen(Object o, final EventChannel.EventSink eventSink) {
+                buttonEvent
+                        .subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<Integer>() {
+
+                            @Override
+                            public void onSubscribe(Disposable d) {
+
+                            }
+
+                            @Override
+                            public void onNext(Integer traceEvent) {
+                                eventSink.success(traceEvent);
                             }
 
                             @Override

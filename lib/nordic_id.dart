@@ -12,6 +12,7 @@ class NordicId {
   static const EventChannel connectionStatusStream = EventChannel('ConnectionStatus');
   static const EventChannel buttonEventsStream = EventChannel('ButtonEvent');
   static const EventChannel barcodeStatusStream = EventChannel('BarcodeStatus');
+  static const EventChannel traceEventStream = EventChannel('TraceEvent');
 
   static Future<bool?> get initialize async {
     return _channel.invokeMethod('Initialize');
@@ -67,5 +68,9 @@ class NordicId {
 
   static Future<bool?> stopBarCodeScan() async {
     return _channel.invokeMethod('StopBarcodeScan');
+  }
+
+  static Future<String?> startTrace(String tag) async {
+    return _channel.invokeMethod('StartTrace', <dynamic, dynamic>{'tag': tag});
   }
 }

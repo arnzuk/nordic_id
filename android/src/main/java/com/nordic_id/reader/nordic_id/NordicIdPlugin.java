@@ -394,6 +394,7 @@ public class NordicIdPlugin
 
     @Override
     public void onTraceTagEvent(int scaledRssi) {
+        Log.i(TAG, scaledRssi);
     }
 
     @Override

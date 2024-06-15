@@ -253,7 +253,7 @@ public class NordicIdPlugin
         connectionEventChannel.setStreamHandler(new EventChannel.StreamHandler() {
             @Override
             public void onListen(Object o, final EventChannel.EventSink eventSink) {
-                buttonEvent
+                traceEvent
                         .subscribeOn(Schedulers.newThread())
                         .observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<Integer>() {
 

@@ -35,6 +35,9 @@ public class NordicIdPlugin
     private MethodChannel channel;
     private static final String CHANNEL_Initialize = "Initialize";
     private static final String CHANNEL_Connect = "Connect";
+    private static final String CHANNEL_ConnectSaved = "ConnectSaved";
+    private static final String CHANNEL_SavedReader = "SavedReader";
+    private static final String CHANNEL_ForgetReader = "ForgetReader";
     private static final String CHANNEL_Destroy = "Destroy";
     private static final String CHANNEL_StopTrace = "StopTrace";
     private static final String CHANNEL_Reset = "Reset";
@@ -92,6 +95,15 @@ public class NordicIdPlugin
             case CHANNEL_Connect:
                 NurHelper.getInstance().connect();
                 result.success(true);
+                break;
+            case CHANNEL_ConnectSaved:
+                result.success(NurHelper.getInstance().connectSaved());
+                break;
+            case CHANNEL_SavedReader:
+                result.success(NurHelper.getInstance().savedReader());
+                break;
+            case CHANNEL_ForgetReader:
+                result.success(NurHelper.getInstance().forgetReader());
                 break;
             case CHANNEL_IsConnected:
                 final boolean isConnected = NurHelper.getInstance().isConnected();

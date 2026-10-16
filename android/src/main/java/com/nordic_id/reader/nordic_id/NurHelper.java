@@ -2,7 +2,11 @@ package com.nordic_id.reader.nordic_id;
 
 import android.Manifest;
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -963,7 +967,8 @@ public class NurHelper {
                     return;
 
                 try {
-                    NurDeviceSpec spec = new NurDeviceSpec(data.getStringExtra(NurDeviceListActivity.SPECSTR));
+                    String specStr = data.getStringExtra(NurDeviceListActivity.SPECSTR);
+                    NurDeviceSpec spec = new NurDeviceSpec(specStr);
 
                     if (hAcTr != null) {
                         System.out.println("Dispose transport");
@@ -978,9 +983,8 @@ public class NurHelper {
 
                     showConnecting();
 
-                    // If you want connect to same device automatically later on, you can save
-                    // 'strAddress" and use that for connecting at app startup for example.
-                    // saveSettings(spec);
+                    // Remember the reader so connectSaved() can reconnect silently later.
+                    prefs().edit().putString(PREF_READER_SPEC, specStr).apply();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -988,6 +992,94 @@ public class NurHelper {
             }
                 break;
         }
+    }
+
+    private static final String PREFS_NAME = "nordic_id";
+    private static final String PREF_READER_SPEC = "readerSpec";
+
+    private SharedPreferences prefs() {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+    }
+
+    private boolean isInitialized() {
+        return context != null && mNurApi != null;
+    }
+
+    /** Spec types that connect over Bluetooth (USB / TCP / INT readers don't need it). */
+    private static boolean needsBluetooth(NurDeviceSpec spec) {
+        String type = spec.getType();
+        return "BLE".equals(type) || "SMARTPAIR".equals(type);
+    }
+
+    private boolean isBluetoothOn() {
+        try {
+            BluetoothManager manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+            BluetoothAdapter adapter = manager == null ? null : manager.getAdapter();
+            return adapter != null && adapter.isEnabled();
+        } catch (SecurityException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Reconnects to the reader remembered from the last device-list selection.
+     * No UI: returns false when nothing is saved, Bluetooth is off/unavailable, or
+     * the plugin isn't initialized. True means connected or connecting in the
+     * background (watch the connection status event / isConnected()).
+     */
+    public boolean connectSaved() {
+        if (!isInitialized())
+            return false;
+        String saved = prefs().getString(PREF_READER_SPEC, null);
+        if (saved == null)
+            return false;
+        try {
+            NurDeviceSpec spec = new NurDeviceSpec(saved);
+            if (needsBluetooth(spec) && !isBluetoothOn())
+                return false;
+            if (mNurApi.isConnected())
+                return true;
+            if (hAcTr != null) {
+                hAcTr.dispose();
+                hAcTr = null;
+            }
+            hAcTr = NurDeviceSpec.createAutoConnectTransport(context, mNurApi, spec);
+            hAcTr.setAddress(spec.getAddress());
+            showConnecting();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /** Short label of the remembered reader ("name (address)" or address), or null. */
+    public String savedReader() {
+        if (!isInitialized())
+            return null;
+        String saved = prefs().getString(PREF_READER_SPEC, null);
+        if (saved == null)
+            return null;
+        NurDeviceSpec spec = new NurDeviceSpec(saved);
+        String name = spec.getName();
+        String address = spec.getAddress();
+        if (name == null || name.isEmpty())
+            return address;
+        if (address == null || address.isEmpty())
+            return name;
+        return name + " (" + address + ")";
+    }
+
+    /** Forgets the remembered reader and disconnects. */
+    public boolean forgetReader() {
+        if (!isInitialized())
+            return false;
+        prefs().edit().remove(PREF_READER_SPEC).apply();
+        if (hAcTr != null) {
+            hAcTr.dispose();
+            hAcTr = null;
+        }
+        return true;
     }
 
 }

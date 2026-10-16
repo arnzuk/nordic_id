@@ -22,6 +22,23 @@ class NordicId {
     return _channel.invokeMethod('Connect');
   }
 
+  /// Silently reconnects to the reader picked earlier via [connect] (Android only).
+  /// False when no reader is saved, Bluetooth is off or the plugin isn't initialized;
+  /// true means connected or connecting in the background (see [connectionStatusStream]).
+  static Future<bool> get connectSaved async {
+    return await _channel.invokeMethod<bool>('ConnectSaved') ?? false;
+  }
+
+  /// Label of the saved reader ("name (address)" or address), or null if none.
+  static Future<String?> get savedReader async {
+    return _channel.invokeMethod<String>('SavedReader');
+  }
+
+  /// Forgets the saved reader and disconnects.
+  static Future<bool> get forgetReader async {
+    return await _channel.invokeMethod<bool>('ForgetReader') ?? false;
+  }
+
   static Future<bool?> get isConnected async {
     return _channel.invokeMethod('IsConnected');
   }
